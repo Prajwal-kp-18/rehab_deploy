@@ -16,7 +16,7 @@ export async function GET(req: Request) {
   try {
     const session = await auth();
     const userId = await session?.user.id;
-
+    console.log(userId);
     // Check if user exists
     const user = await db.user.findUnique({ where: { id: userId } });
     if (!user) {

@@ -3,6 +3,8 @@ from fastapi import FastAPI, HTTPException
 from langchain_google_genai import ChatGoogleGenerativeAI
 from pydantic import BaseModel
 import os
+import re
+import json
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
 load_dotenv()
@@ -42,6 +44,11 @@ class ScreeningRequest(BaseModel):
 class DetailedAssessmentRequest(BaseModel):
     disease: str
     responses: Dict[str, str] 
+
+class chatRequest(BaseModel):
+    disease: str
+    responses:Dict[str, str]
+    chat_history: list[Dict[str, str]]=[]
 
 screening_questions = {
     "PTSD": "Have you experienced a traumatic event that still causes distress?",
@@ -157,38 +164,16 @@ async def detailed_assessment(request: DetailedAssessmentRequest):
         "questions": disease_specific_questions[disease]
     }
 
-# @app.post("/chat")
-# async def chat(request: DetailedAssessmentRequest):
-#     try:
-#         if not request.responses:
-#            raise HTTPException(status_code=400, detail="No responses p rovided")
+def clean_and_format_response(text):
+           text = text.replace("*", "")
+    
+           text = re.sub(r'•\s*', '\n• ', text)  
+           text = re.sub(r'\d+\.\s*', lambda x: f"\n{x.group()}", text)  
+    
+           text = re.sub(r'\n\s*\n', '\n', text) 
+           text = text.strip() 
 
-#         response_text = "\n".join([f"{q}: {a}" for q, a in request.responses.items()])
-
-#         system_prompt = f"""
-#         You are a rehabilitation doctor specializing in {request.disease}. 
-#         The patient has answered the following questions regarding their condition:\n
-#         {response_text}
-        
-#         Based on this, provide expert medical advice, suggest therapy, and offer emotional support.
-#         Do not refer to any sort of person like as psycatrist, instead consider yourself as a doctor and ask the related questions and process them, if at the later stage, its too complicated than only refer to the doctor.otherwise,suggest things that the user can do by him self and keep it short and crisp.
-#         """
-
-#         chat_history = [
-#             {"role": "system", "content": system_prompt},
-#             {"role": "user", "content": "What should I do next?"}
-#         ]
-
-#         response = llm.invoke(chat_history)
-#         response_text = response.content if hasattr(response, "content") else str(response)
-
-#         return {"response": response_text}
-
-#     except Exception as e:
-#         print("Error:", e)
-#         raise HTTPException(status_code=500, detail=str(e))
-
-
+           return text
 @app.post("/diet")
 async def generate_diet_chart(request: DetailedAssessmentRequest):
     """
@@ -198,19 +183,31 @@ async def generate_diet_chart(request: DetailedAssessmentRequest):
         response_text = "\n".join([f"{q}: {a}" for q, a in request.responses.items()])
 
         diet_prompt = f"""
-        You are a dietary expert specializing in creating health-focused meal plans.
+        You are a dietary expert specializing in health-focused meal plans.
         The patient has been diagnosed with {request.disease} and provided the following details:\n
         {response_text}
         
-        Based on this information, suggest a structured diet plan that:
-        - Is simple and easy to follow.
-        - Avoids any references to doctors or medical professionals.
-        - Contains breakfast, lunch, dinner, and snack options.
-        - Includes key nutrients essential for managing {request.disease}.
-        - Avoids foods that may worsen the condition.
-        - Provides alternative food choices if necessary.
+        Based on this, provide a structured diet plan in **strict JSON format**:
 
-        Ensure the response is formatted properly, short, and crisp.
+        {{
+          "focus": "Brief description of the diet focus for {request.disease}",
+          "keyNutrients": ["Nutrient 1", "Nutrient 2", "Nutrient 3"],
+          "foodsToLimit": ["Food 1", "Food 2", "Food 3"],
+          "mealPlan": {{
+            "breakfast": [{{ "option": "Meal 1" }}, {{ "option": "Meal 2" }}],
+            "lunch": [{{ "option": "Meal 1" }}, {{ "option": "Meal 2" }}],
+            "dinner": [{{ "option": "Meal 1" }}, {{ "option": "Meal 2" }}],
+            "snacks": [{{ "option": "Snack 1" }}, {{ "option": "Snack 2" }}]
+          }},
+          "importantConsiderations": {{
+            "hydration": "Hydration advice",
+            "regularMeals": "Meal consistency advice",
+            "portionControl": "Portion control tips",
+            "listenToYourBody": "Listening to hunger and fullness cues"
+          }}
+        }}
+
+        **Only return a valid JSON object. No extra text.**
         """
 
         chat_history = [
@@ -219,20 +216,29 @@ async def generate_diet_chart(request: DetailedAssessmentRequest):
         ]
 
         response = llm.invoke(chat_history)
-        response_text = response.content if hasattr(response, "content") else str(response)
+        print("Raw LLM Response:", response)
 
+        # response_text = response.content if hasattr(response, "content") else str(response)
+
+        # response_text = clean_and_format_response(response_text)
+        # return {"diet_plan": response_text}
+        # Ensure response contains valid JSON format
+        if not hasattr(response, "content"):
+            raise ValueError("Invalid response from LLM")
+        response_text = response.content.strip()
+        print("Cleaned LLM Response:", response_text)
+
+        response_text = clean_and_format_response(response_text)
         return {"diet_plan": response_text}
-
     except Exception as e:
         print("Error:", e)
         raise HTTPException(status_code=500, detail=str(e))
 
 # BEFORE CHANGES FOR FORMATTING
 @app.post("/chat")
-async def chat(request: DetailedAssessmentRequest):
-    """
-    Handles chat interaction for mental health recovery.
-    """
+async def chat(request: chatRequest):
+    print("Received Request:", request) 
+
     try:
         if not request.responses:
             raise HTTPException(status_code=400, detail="No responses provided")
@@ -240,30 +246,47 @@ async def chat(request: DetailedAssessmentRequest):
         # Format patient responses as a bullet list
         response_text = "\n".join([f"- **{q}**: {a}" for q, a in request.responses.items()])
 
-        # System prompt for structured AI response
-        system_prompt = f"""
-        You are a rehabilitation coach helping users recover from {request.disease}.
-        The user has answered the following questions regarding their condition:\n
-        {response_text}
+        if len(request.chat_history) == 1:
+
+           system_prompt = f"""
+           You are a rehabilitation coach helping users recover from {request.disease}.
+           The user has answered the following questions regarding their condition:\n
+           {response_text}
         
-        Based on this, provide step-by-step recovery suggestions, emotional support, 
-        and self-improvement exercises. Do not refer to a psychiatrist or doctor.
-        Instead, guide the user on what they can do themselves.
+           Based on this, provide step-by-step recovery suggestions,    emotional support, 
+           and self-improvement exercises. Do not refer to a psychiatrist or doctor.
+           Instead, guide the user on what they can do themselves.
         
-        The user should be able to ask follow-up questions, and responses should be 
-        clear, short, and actionable.
-        """
+           The user should be able to ask follow-up questions, and 
+            Your response **must be concise and within 100 words**.
+            Use **short sentences and bullet points** if necessary.
+            Keep your answer **clear and actionable**.
+           """
+           chat_history=[{"role": "system", "content": system_prompt}]
+        else:
+            chat_history = request.chat_history
 
-        chat_history = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": "What should I do next?"}
-        ]
+        print("Chat History Before Processing:", chat_history)
+        latest_message = (chat_history[-1]["content"] if chat_history else "What should I do next?")
 
-        # Get AI response
-        response = llm.invoke(chat_history)
-        formatted_response = response.content if hasattr(response, "content") else str(response)
 
-        return {"response": formatted_response}
+        chat_history.append({"role": "user", "content": latest_message})
+
+        formatted_history = "\n".join([f"{msg['role']}: {msg['content']}" for msg in chat_history])
+ 
+        formatted_history += "\n\nPlease keep your response within 100 words."
+
+        response = llm.invoke(formatted_history)
+        if not response:
+         raise HTTPException(status_code=500, detail="LLM returned empty response")
+       
+        response_text = response.content if hasattr(response, "content") else str(response)
+        
+        response_text = clean_and_format_response(response_text)
+        chat_history.append({"role": "bot", "content": response_text})
+        print("Chat History After Processing:", chat_history)
+
+        return {"response": response_text,"chat_history":chat_history}
 
     except Exception as e:
         print("Error:", e)

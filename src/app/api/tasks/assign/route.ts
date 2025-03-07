@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import tasksData from "@/lib/data/tasks.json"; 
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/lib/db";
+import tasksData from "@/lib/data/tasks.json";
+import { auth } from "../../../../../auth";
 
 interface Activity {
   physical_activities: string[];
@@ -28,39 +29,69 @@ interface TasksData {
 }
 
 // Helper function to combine physical and thoughtful tasks into a single string
-const combineTasks = (physicalTasks: string[], thoughtfulTasks: string[]): string => {
-  const physical = physicalTasks.length > 0 ? `Physical: ${physicalTasks.join(', ')}` : '';
-  const thoughtful = thoughtfulTasks.length > 0 ? `Thoughtful: ${thoughtfulTasks.join(', ')}` : '';
-  return [physical, thoughtful].filter(Boolean).join(' | ');
+const combineTasks = (
+  physicalTasks: string[],
+  thoughtfulTasks: string[]
+): string[] => {
+  // const physical =
+  //   physicalTasks.length > 0 ? `Physical: ${physicalTasks.join(", ")}` : "";
+  // const thoughtful =
+  //   thoughtfulTasks.length > 0
+  //     ? `Thoughtful: ${thoughtfulTasks.join(", ")}`
+  //     : "";
+  return [...physicalTasks, ...thoughtfulTasks];
 };
 
 // POST: Assign tasks to a user
 export async function POST(req: NextRequest) {
   try {
-    const { userId, disorder, severity } = await req.json();
+    const { disease, severity } = await req.json();
+    const disorder = disease;
+    const session = await auth();
+    const userId = await session?.user.id;
+    console.log(req);
+    console.log(disorder);
+    console.log(severity);
 
-    // Validation
     if (!userId || !disorder || !severity) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
     }
 
-    if (disorder !== 'Depression') { // JSON implies Depression; extend if more disorders are added
-      return NextResponse.json({ error: 'Unsupported disorder type' }, { status: 400 });
-    }
+    // if (disorder !== "Depression") {
+    //   return NextResponse.json(
+    //     { error: "Unsupported disorder type" },
+    //     { status: 400 }
+    //   );
+    // }
 
-    if (!['mild', 'moderate', 'severe'].includes(severity)) {
-      return NextResponse.json({ error: 'Invalid severity level' }, { status: 400 });
+    if (!["mild", "moderate", "severe"].includes(severity)) {
+      return NextResponse.json(
+        { error: "Invalid severity level" },
+        { status: 400 }
+      );
     }
 
     // Check if user exists
     const user = await db.user.findUnique({ where: { id: userId } });
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-
+    const data: any = tasksData[disorder];
     // Extract tasks from JSON
-    const weeks = (tasksData as unknown as TasksData).tasks.weeks;
-    const tasks: { userId: any; disorder: any; severity: any; week: number; day: number; task: string; status: "pending"; reflection: null; }[] = [];
+    const weeks = (data as unknown as TasksData).tasks.weeks;
+    const tasks: {
+      userId: any;
+      disorder: any;
+      severity: any;
+      week: number;
+      day: number;
+      task: string;
+      status: "pending";
+      reflection: null;
+    }[] = [];
 
     for (let weekIdx = 0; weekIdx < weeks.length; weekIdx++) {
       const week = weeks[weekIdx];
@@ -69,27 +100,34 @@ export async function POST(req: NextRequest) {
       for (let dayIdx = 0; dayIdx < week.days.length; dayIdx++) {
         const day = week.days[dayIdx];
         const dayNumber = day.day; // 1-7 as per schema
-        const activities = day.activities_by_severity[severity as 'mild' | 'moderate' | 'severe'];
+        const activities =
+          day.activities_by_severity[
+            severity as "mild" | "moderate" | "severe"
+          ];
 
-        const combinedTask = combineTasks(activities.physical_activities, activities.thoughtful_tasks);
-
+        const combinedTasks = combineTasks(
+          activities.physical_activities,
+          activities.thoughtful_tasks
+        );
+        for (let taskIdx = 0; taskIdx < weeks.length; taskIdx++) {
         tasks.push({
           userId,
           disorder,
           severity,
           week: weekNumber,
           day: dayNumber,
-          task: combinedTask,
-          status: 'pending' as const,
+          task: combinedTasks[taskIdx],
+          status: "pending" as const,
           reflection: null,
         });
+      }
       }
     }
 
     // Bulk create tasks with transaction to avoid duplicates
     await db.$transaction(async (prisma) => {
       await prisma.dailyTask.deleteMany({
-        where: { userId, severity },
+        where: { userId, severity, disorder },
       });
 
       await prisma.dailyTask.createMany({
@@ -97,10 +135,16 @@ export async function POST(req: NextRequest) {
       });
     });
 
-    return NextResponse.json({ message: 'Tasks assigned successfully!' }, { status: 201 });
+    return NextResponse.json(
+      { message: "Tasks assigned successfully!" },
+      { status: 201 }
+    );
   } catch (error) {
-    console.error('Error assigning tasks:', error);
-    return NextResponse.json({ error: 'Failed to assign tasks' }, { status: 500 });
+    console.error("Error assigning tasks:", error);
+    return NextResponse.json(
+      { error: "Failed to assign tasks:"},
+      { status: 500 }
+    );
   }
 }
 
@@ -111,33 +155,48 @@ export async function PATCH(req: NextRequest) {
 
     // Validation
     if (!userId || !week || !day || !status) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
     }
 
-    if (!['pending', 'completed', 'skipped'].includes(status)) {
-      return NextResponse.json({ error: 'Invalid status value' }, { status: 400 });
+    if (!["pending", "completed", "skipped"].includes(status)) {
+      return NextResponse.json(
+        { error: "Invalid status value" },
+        { status: 400 }
+      );
     }
 
     if (week < 1 || week > 5 || day < 1 || day > 7) {
-      return NextResponse.json({ error: 'Invalid week or day range' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid week or day range" },
+        { status: 400 }
+      );
     }
 
     // Update tasks
     const updated = await db.dailyTask.updateMany({
       where: { userId, week, day },
-      data: { 
+      data: {
         status,
         reflection: reflection || null,
       },
     });
 
     if (updated.count === 0) {
-      return NextResponse.json({ error: 'No tasks found to update' }, { status: 404 });
+      return NextResponse.json(
+        { error: "No tasks found to update" },
+        { status: 404 }
+      );
     }
 
-    return NextResponse.json({ message: 'Task updated successfully!' });
+    return NextResponse.json({ message: "Task updated successfully!" });
   } catch (error) {
-    console.error('Error updating task:', error);
-    return NextResponse.json({ error: 'Failed to update task' }, { status: 500 });
+    console.error("Error updating task:", error);
+    return NextResponse.json(
+      { error: "Failed to update task" },
+      { status: 500 }
+    );
   }
 }
