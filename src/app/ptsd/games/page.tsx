@@ -168,7 +168,7 @@ export default function Home() {
                         )}
                       </div>
                       <div>
-                        <CardTitle className="text-xl group-hover:text-white transition-colors">
+                        <CardTitle className="text-xl text-white transition-colors">
                           Level {game.level}: {game.title}
                         </CardTitle>
                         <CardDescription className="text-gray-400">

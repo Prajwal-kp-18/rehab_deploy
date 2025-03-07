@@ -37,6 +37,7 @@ export default function ChaosCommander({ onComplete, onExit }: Props) {
   const [taskCounter, setTaskCounter] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
   const [streak, setStreak] = useState(0);
+  const [progressSubmitted, setProgressSubmitted] = useState(false);
 
   const generateTask = useCallback(
     (difficulty: number): Task => {
@@ -180,6 +181,57 @@ export default function ChaosCommander({ onComplete, onExit }: Props) {
     );
   }, []);
 
+  const submitGameProgress = async () => {
+    const currentDate = new Date().toISOString().split("T")[0];
+    const lastPlayDate = localStorage.getItem("lastPlayDate");
+    let streak = 1;
+
+    if (lastPlayDate) {
+      const lastDate = new Date(lastPlayDate);
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      if (
+        lastDate.toISOString().split("T")[0] ===
+        yesterday.toISOString().split("T")[0]
+      ) {
+        streak = parseInt(localStorage.getItem("streak") || "1") + 1;
+      } else if (lastDate.toISOString().split("T")[0] !== currentDate) {
+        streak = 1;
+      }
+    }
+
+    localStorage.setItem("lastPlayDate", currentDate);
+    localStorage.setItem("streak", streak.toString());
+
+    const gameProgress = {
+      gameId: "CHAOS_COMMANDER",
+      score: score,
+      completion: true,
+      timeSpent: GAME_TIME - timeLeft,
+      difficulty: "Severe",
+      streak: streak,
+      retries: score,
+      frustrationScore: Math.max(0, score - 10),
+    };
+
+    try {
+      const response = await fetch("/api/games/progress", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(gameProgress),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to submit game progress");
+      }
+    } catch (error) {
+      console.error("Error submitting game progress:", error);
+    }
+  };
+
   if (!gameStarted) {
     return (
       <div className="relative w-full h-[80vh] bg-gray-900 rounded-lg flex items-center justify-center">
@@ -203,12 +255,19 @@ export default function ChaosCommander({ onComplete, onExit }: Props) {
   }
 
   if (gameOver) {
+    if (!progressSubmitted) {
+      submitGameProgress();
+      setProgressSubmitted(true);
+    }
     return (
       <div className="relative w-full h-[80vh] bg-gray-900 rounded-lg flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-3xl font-bold text-white mb-4">Game Over!</h2>
           <p className="text-xl text-white mb-4">Final Score: {score}</p>
           <Button onClick={() => onComplete(score)}>Continue</Button>
+          <Button onClick={onExit} className="mt-4 bg-red-500 hover:bg-red-600">
+            Exit
+          </Button>
         </div>
       </div>
     );

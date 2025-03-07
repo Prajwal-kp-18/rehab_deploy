@@ -1,5 +1,5 @@
 {
-    "depression": {
+    "Depression": {
         "tasks": {
             "weeks": [
                 {
@@ -1577,7 +1577,7 @@
             }
         }
     },
-    "ocd": {
+    "OCD": {
         "tasks": {
             "weeks": [
                 {
@@ -3155,7 +3155,7 @@
             }
         }
     },
-    "ptsd": {
+    "PTSD": {
         "tasks": {
             "weeks": [
                 {

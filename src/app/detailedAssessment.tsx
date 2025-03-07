@@ -124,6 +124,23 @@ export default function DetailedAssessment({
         
         if (!res.ok) throw new Error(`Error ${res.status}: ${await res.text()}`);
 
+        const taskResponse =  await fetch("/api/tasks/assign", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ diseases, severity: "mild"}),
+        });
+
+        if (!taskResponse.ok) {
+          const errorText = await taskResponse.text();
+          throw new Error(`Error ${taskResponse.status}: ${errorText}`);
+        }
+
+
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(`Error ${res.status}: ${errorText}`);
+        }
+
         const data = await res.json();
         setQuestions(data.questions || {});
         setMessages([{ id: "1", text: data.message, sender: "bot" }]);

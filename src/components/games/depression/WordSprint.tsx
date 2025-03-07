@@ -32,6 +32,7 @@ export default function WordSprint({ onComplete, onExit }: Props) {
   const [scrambledWord, setScrambledWord] = useState("");
   const [input, setInput] = useState("");
   const [gameOver, setGameOver] = useState(false);
+  const [isGameOverSubmitted, setIsGameOverSubmitted] = useState(false);
 
   const scrambleWord = (word: string) => {
     return word
@@ -71,6 +72,64 @@ export default function WordSprint({ onComplete, onExit }: Props) {
       getNewWord();
     }
   };
+
+  const submitGameProgress = async () => {
+    const currentDate = new Date().toISOString().split("T")[0];
+    const lastPlayDate = localStorage.getItem("lastPlayDate");
+    let streak = 1;
+
+    if (lastPlayDate) {
+      const lastDate = new Date(lastPlayDate);
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      if (
+        lastDate.toISOString().split("T")[0] ===
+        yesterday.toISOString().split("T")[0]
+      ) {
+        streak = parseInt(localStorage.getItem("streak") || "1") + 1;
+      } else if (lastDate.toISOString().split("T")[0] !== currentDate) {
+        streak = 1;
+      }
+    }
+
+    localStorage.setItem("lastPlayDate", currentDate);
+    localStorage.setItem("streak", streak.toString());
+
+    const gameProgress = {
+      gameId: "WORD_SPRINT",
+      score: score,
+      completion: true,
+      timeSpent: INITIAL_TIME - timeLeft,
+      difficulty: "mild",
+      streak: streak,
+      retries: score,
+      frustrationScore: Math.max(0, score - 10),
+    };
+
+    try {
+      const response = await fetch("/api/games/progress", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(gameProgress),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to submit game progress");
+      }
+    } catch (error) {
+      console.error("Error submitting game progress:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (gameOver && !isGameOverSubmitted) {
+      submitGameProgress();
+      setIsGameOverSubmitted(true);
+    }
+  }, [gameOver, isGameOverSubmitted]);
 
   if (gameOver) {
     return (
