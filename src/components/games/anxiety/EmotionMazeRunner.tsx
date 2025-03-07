@@ -120,12 +120,73 @@ export default function EmotionMazeRunner({ onComplete, onExit }: Props) {
     setCollectedEmotions([]);
   };
 
+  const submitGameProgress = async () => {
+    const currentDate = new Date().toISOString().split("T")[0];
+    const lastPlayDate = localStorage.getItem("lastPlayDate");
+    let streak = 1;
+
+    if (lastPlayDate) {
+      const lastDate = new Date(lastPlayDate);
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      if (
+        lastDate.toISOString().split("T")[0] ===
+        yesterday.toISOString().split("T")[0]
+      ) {
+        streak = parseInt(localStorage.getItem("streak") || "1") + 1;
+      } else if (lastDate.toISOString().split("T")[0] !== currentDate) {
+        streak = 1;
+      }
+    }
+
+    localStorage.setItem("lastPlayDate", currentDate);
+    localStorage.setItem("streak", streak.toString());
+
+    const gameProgress = {
+      gameId: "EMOTION_MAZE",
+      score: score,
+      completion: true,
+      timeSpent: GAME_TIME - timeLeft,
+      difficulty: "Easy",
+      streak: streak,
+      retries: score,
+      frustrationScore: Math.max(0, score - 10),
+    };
+
+    console.log("Submitting game progress:", gameProgress);
+
+    try {
+      const response = await fetch("/api/games/progress", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(gameProgress),
+      });
+
+      console.log("Response status:", response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to submit game progress: ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log("Game progress submitted successfully:", result);
+    } catch (error) {
+      console.error("Error submitting game progress:", error);
+      alert("Error saving progress. Please try again later.");
+    }
+  };
+
   useEffect(() => {
     initializeGrid();
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           setGameOver(true);
+          submitGameProgress();
           clearInterval(timer);
           return 0;
         }
@@ -274,6 +335,9 @@ export default function EmotionMazeRunner({ onComplete, onExit }: Props) {
           <h2 className="text-3xl font-bold text-white mb-4">Game Over!</h2>
           <p className="text-xl text-white mb-4">Final Score: {score}</p>
           <Button onClick={() => onComplete(score)}>Continue</Button>
+          <Button onClick={onExit} className="mt-4">
+            Exit
+          </Button>
         </div>
       </div>
     );

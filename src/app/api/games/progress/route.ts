@@ -1,17 +1,25 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db"; // Prisma client
+import { db } from "@/lib/db";
 import { auth } from "../../../../../auth";
 
-const session = await auth();
-const userId =  session?.user.id;
-
 export async function POST(req: Request) {
+  const session = await auth();
+  const userId = session?.user.id;
   try {
-    const { gameId, score, completion, timeSpent, difficulty } =
-      await req.json();
+    const {
+      gameId,
+      score,
+      completion,
+      timeSpent,
+      difficulty,
+      streak,
+      frustrationScore,
+    } = await req.json();
+
+    console.log("GAME NAME " + gameId);
 
     // Validate required fields
-    if (!userId || !gameId) {
+    if (!userId || !gameId || !score || !completion || !timeSpent) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -26,13 +34,8 @@ export async function POST(req: Request) {
         completion,
         timeSpent,
         difficulty,
-        // streak,
-        // retries,
-        // dropOff,
-        // frustrationScore,
-        // badgesEarned,
-        // challengesDone,
-        // gameData,
+        streak,
+        frustrationScore,
       },
     });
 
@@ -50,10 +53,10 @@ export async function POST(req: Request) {
 }
 
 export async function GET(req: Request) {
+  const session = await auth();
+  const userId = session?.user.id;
   try {
-    const { searchParams } = new URL(req.url);
-    const userId = searchParams.get("userId");
-    const gameType = searchParams.get("gameType"); // Optional filter
+    // const gameType = searchParams.get("gameType"); // Optional filter
 
     if (!userId) {
       return NextResponse.json(
@@ -63,7 +66,7 @@ export async function GET(req: Request) {
     }
 
     const progress = await db.gameProgress.findMany({
-      where: { userId, ...(gameType ? { gameType } : {}) },
+      where: { userId: userId },
       orderBy: { datePlayed: "desc" },
     });
 
