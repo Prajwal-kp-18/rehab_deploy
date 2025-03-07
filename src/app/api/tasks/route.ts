@@ -13,8 +13,8 @@ export async function GET(req: Request) {
         return NextResponse.json({ error: "User ID is required" }, { status: 400 });
       }
   
-      const task = await db.dailyTask.findFirst({
-        where: { userId, week, day },
+      const task = await db.dailyTask.findMany({
+        where: { userId, week },
       });
   
       if (!task) {
