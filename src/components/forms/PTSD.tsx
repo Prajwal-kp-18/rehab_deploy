@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
@@ -19,7 +18,6 @@ interface Challenge {
 
 
   
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function PTSD( challenges : Challenge[]|any) {
     // const router = useRouter();
       const [currentChallenge, setCurrentChallenge] = useState(0);

@@ -65,7 +65,6 @@ export async function GET(req: NextRequest) {
       }
 
     // Fetch video details
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const videoPromises = searchData.items.map(async (video: any) => {
       const videoId = video.id.videoId;
       const details = await getVideoDetails(videoId);

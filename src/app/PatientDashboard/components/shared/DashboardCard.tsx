@@ -23,7 +23,6 @@ const DashboardCard = ({
   headtitle,
   headsubtitle,
   middlecontent,
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 }: Props|any) => {
   return (
     <Card sx={{ padding: 0 }} elevation={9} variant={undefined} className =" max-w-full">
