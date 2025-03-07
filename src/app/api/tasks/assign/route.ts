@@ -32,14 +32,14 @@ interface TasksData {
 const combineTasks = (
   physicalTasks: string[],
   thoughtfulTasks: string[]
-): string => {
-  const physical =
-    physicalTasks.length > 0 ? `Physical: ${physicalTasks.join(", ")}` : "";
-  const thoughtful =
-    thoughtfulTasks.length > 0
-      ? `Thoughtful: ${thoughtfulTasks.join(", ")}`
-      : "";
-  return [physical, thoughtful].filter(Boolean).join(" | ");
+): string[] => {
+  // const physical =
+  //   physicalTasks.length > 0 ? `Physical: ${physicalTasks.join(", ")}` : "";
+  // const thoughtful =
+  //   thoughtfulTasks.length > 0
+  //     ? `Thoughtful: ${thoughtfulTasks.join(", ")}`
+  //     : "";
+  return [...physicalTasks, ...thoughtfulTasks];
 };
 
 // POST: Assign tasks to a user
@@ -60,12 +60,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (disorder !== "Depression") {
-      return NextResponse.json(
-        { error: "Unsupported disorder type" },
-        { status: 400 }
-      );
-    }
+    // if (disorder !== "Depression") {
+    //   return NextResponse.json(
+    //     { error: "Unsupported disorder type" },
+    //     { status: 400 }
+    //   );
+    // }
 
     if (!["mild", "moderate", "severe"].includes(severity)) {
       return NextResponse.json(
@@ -79,9 +79,9 @@ export async function POST(req: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-
+    const data: any = tasksData[disorder];
     // Extract tasks from JSON
-    const weeks = (tasksData as unknown as TasksData).tasks.weeks;
+    const weeks = (data as unknown as TasksData).tasks.weeks;
     const tasks: {
       userId: any;
       disorder: any;
@@ -105,28 +105,29 @@ export async function POST(req: NextRequest) {
             severity as "mild" | "moderate" | "severe"
           ];
 
-        const combinedTask = combineTasks(
+        const combinedTasks = combineTasks(
           activities.physical_activities,
           activities.thoughtful_tasks
         );
-
+        for (let taskIdx = 0; taskIdx < weeks.length; taskIdx++) {
         tasks.push({
           userId,
           disorder,
           severity,
           week: weekNumber,
           day: dayNumber,
-          task: combinedTask,
+          task: combinedTasks[taskIdx],
           status: "pending" as const,
           reflection: null,
         });
+      }
       }
     }
 
     // Bulk create tasks with transaction to avoid duplicates
     await db.$transaction(async (prisma) => {
       await prisma.dailyTask.deleteMany({
-        where: { userId, severity },
+        where: { userId, severity, disorder },
       });
 
       await prisma.dailyTask.createMany({
@@ -141,7 +142,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("Error assigning tasks:", error);
     return NextResponse.json(
-      { error: "Failed to assign tasks" },
+      { error: "Failed to assign tasks:"},
       { status: 500 }
     );
   }

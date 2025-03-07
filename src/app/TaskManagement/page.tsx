@@ -33,19 +33,37 @@ const TaskManager = () => {
   const [currentGroup, setCurrentGroup] = useState(1);
 
   useEffect(() => {
+    // async function fetchTasks() {
+    //   const res = await fetch("/api/tasks");
+    //   const data = await res.json();
+    //   console.log(data);
+    //   const newActivities = data.map((act:any, index) => ({
+    //     description: act.task[index],
+    //     status: "pending",
+
+
+    //   }))
+    // }
+  
+  
+    
    fetch("/api/tasks")
       .then((res) => res.json())
       .then((data) => {
         // If additional activities come from the API, ensure they follow the same schema.
         console.log(data);
-        const newActivities = data.map((act: any) => ({
-          ...act,
+        const acts = data;
+        console.log(acts);
+        const newActivities = acts.map((act: any, index: number) => ({
+          id: index,
+          title: `Activity ${index + 1}`,
+          description: act.task,
           status: "pending",
           hasTaken: false,
           day: act.day || 1,
           videoQuery: act.videoQuery || "default video",
         }));
-        setActivities([...defaultActivities, ...newActivities]);
+        setActivities([ ...newActivities]);
         setLoading(false);
       })
       .catch(() => setLoading(false));
