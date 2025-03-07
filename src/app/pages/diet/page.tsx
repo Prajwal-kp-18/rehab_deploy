@@ -17,9 +17,9 @@ export default function Diet() {
   const [diet, setDiet] = useState<DietPlan| null>(null);
   const searchParams = useSearchParams(); 
 
-  const disease = searchParams.get("disease") || ""; 
+  const diseaseString = searchParams.get("disease") || "";
+  const diseaseList = diseaseString.split(",").map(d => d.trim()).filter(Boolean); // Trim spaces and remove empty entries
   const responsesString = searchParams.get("responses");
-
   let responses = {};
   try {
     responses = responsesString ? JSON.parse(decodeURIComponent(responsesString)) : {};
@@ -36,7 +36,7 @@ export default function Diet() {
         const res = await fetch("http://127.0.0.1:8000/diet", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ disease, responses }),
+          body: JSON.stringify({ diseases: diseaseList, responses }),
         });
 
         if (!res.ok) {
@@ -61,7 +61,7 @@ export default function Diet() {
       } 
     };
 
-    if (disease) fetchDiet();
+    if (diseaseList.length > 0) fetchDiet();
   }, []);
 
   return (

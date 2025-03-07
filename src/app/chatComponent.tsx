@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-export default function Chat({ disease, responses }: { disease: string; responses: Record<string, string>; }) {
+export default function Chat({ diseases, responses }: { diseases: string[]; responses: Record<string, string>; }) {
   const [chatHistory, setChatHistory] = useState<{ role: string; content: string }[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -15,7 +15,7 @@ export default function Chat({ disease, responses }: { disease: string; response
       const res = await fetch("http://127.0.0.1:8000/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ disease, responses, chat_history: updatedHistory })
+        body: JSON.stringify({ diseases, responses, chat_history: updatedHistory })
       });
       if (!res.ok) {
         throw new Error(`HTTP error! Status: ${res.status}`);
@@ -53,7 +53,7 @@ export default function Chat({ disease, responses }: { disease: string; response
       {/* Buttons for Separate Pages */}
       <div className="mt-4 flex gap-4">
       <Link
-          href={`/pages/diet?disease=${encodeURIComponent(disease)}&responses=${encodeURIComponent(JSON.stringify(responses))}`}
+          href={`/pages/diet?disease=${encodeURIComponent(diseases.join(','))}&responses=${encodeURIComponent(JSON.stringify(responses))}`}
         >
           <button className="bg-green-500 text-white px-4 py-2">View Diet Chart</button>
         </Link>
