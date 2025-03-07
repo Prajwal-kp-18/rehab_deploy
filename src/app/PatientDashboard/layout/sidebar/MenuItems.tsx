@@ -60,16 +60,16 @@ const Menuitems = [
     icon: IconUsers,
     href: "/PatientDashboard/PatientPage/Community",
   },
-  {
-    title: "Login",
-    icon: IconLogin,
-    href: "/authentication/login",
-  },
-  {
-    title: "Register",
-    icon: IconUserPlus,
-    href: "/authentication/register",
-  },
+  // {
+  //   title: "Login",
+  //   icon: IconLogin,
+  //   href: "/authentication/login",
+  // },
+  // {
+  //   title: "Register",
+  //   icon: IconUserPlus,
+  //   href: "/authentication/register",
+  // },
 ];
 
 export default Menuitems;

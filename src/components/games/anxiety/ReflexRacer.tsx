@@ -54,12 +54,37 @@ export default function ReflexRacer({ onComplete, onExit }: Props) {
   };
 
   const submitGameProgress = async () => {
+    const currentDate = new Date().toISOString().split("T")[0];
+    const lastPlayDate = localStorage.getItem("lastPlayDate");
+    let streak = 1;
+
+    if (lastPlayDate) {
+      const lastDate = new Date(lastPlayDate);
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      if (
+        lastDate.toISOString().split("T")[0] ===
+        yesterday.toISOString().split("T")[0]
+      ) {
+        streak = parseInt(localStorage.getItem("streak") || "1") + 1;
+      } else if (lastDate.toISOString().split("T")[0] !== currentDate) {
+        streak = 1;
+      }
+    }
+
+    localStorage.setItem("lastPlayDate", currentDate);
+    localStorage.setItem("streak", streak.toString());
+
     const gameProgress = {
       gameId: "REFLEX_RACER",
       score: score,
       completion: true,
       timeSpent: 30 - timeLeft,
-      difficulty: "Easy",
+      difficulty: "mild",
+      streak: streak,
+      retries: score,
+      frustrationScore: Math.max(0, score - 10),
     };
 
     try {
@@ -78,7 +103,6 @@ export default function ReflexRacer({ onComplete, onExit }: Props) {
       console.error("Error submitting game progress:", error);
     }
   };
-
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
@@ -104,7 +128,11 @@ export default function ReflexRacer({ onComplete, onExit }: Props) {
       <div className="absolute top-4 left-4 right-4 flex justify-between items-center z-10">
         <div className="text-white text-xl">Score: {score}</div>
         <div className="text-white text-xl">Time: {timeLeft}s</div>
-        <Button variant="outline" onClick={onExit}>
+        <Button
+          variant="outline"
+          className="bg-blue-600 hover:bg-red "
+          onClick={onExit}
+        >
           Exit
         </Button>
       </div>

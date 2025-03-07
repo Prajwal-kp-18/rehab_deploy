@@ -22,6 +22,8 @@ const eslintConfig = [
       // New rules to disable the warnings and errors
       "react-hooks/exhaustive-deps": "off", // Disables missing dependency warnings for useEffect/useCallback
       "prefer-const": "off", // Disables the "use const instead" errors
+      "jsx-a11y/alt-text": "off", // Disables alt prop warnings for img elements
+      "@next/next/no-html-link-for-pages": "off", // Disables the warning for using <a> instead of <Link>
     },
   },
 ];
