@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict,List
 from fastapi import FastAPI, HTTPException
 from langchain_google_genai import ChatGoogleGenerativeAI
 from pydantic import BaseModel
@@ -42,11 +42,11 @@ class ScreeningRequest(BaseModel):
     responses: Dict[str, str]
 
 class DetailedAssessmentRequest(BaseModel):
-    disease: str
+    diseases: List[str]
     responses: Dict[str, str] 
 
 class chatRequest(BaseModel):
-    disease: str
+    diseases: List[str]
     responses:Dict[str, str]
     chat_history: list[Dict[str, str]]=[]
 
@@ -155,13 +155,10 @@ async def screening(request: ScreeningRequest):
     }
 @app.post("/detailed_assessment")
 async def detailed_assessment(request: DetailedAssessmentRequest):
-    disease = request.disease
-    if disease not in disease_specific_questions:
-        raise HTTPException(status_code=400, detail="Invalid disease category")
-
+    questions = {disease: disease_specific_questions[disease] for disease in request.diseases}
     return {
-        "message": f"Please answer the following questions to assess the severity of {disease}.",
-        "questions": disease_specific_questions[disease]
+        "message": "Please answer the following questions for assessment.",
+        "questions": questions
     }
 
 def clean_and_format_response(text):
@@ -184,13 +181,13 @@ async def generate_diet_chart(request: DetailedAssessmentRequest):
 
         diet_prompt = f"""
         You are a dietary expert specializing in health-focused meal plans.
-        The patient has been diagnosed with {request.disease} and provided the following details:\n
+        The patient has been diagnosed with {request.diseases} and provided the following details:\n
         {response_text}
         
         Based on this, provide a structured diet plan in **strict JSON format**:
 
         {{
-          "focus": "Brief description of the diet focus for {request.disease}",
+          "focus": "Brief description of the diet focus for {request.diseases}",
           "keyNutrients": ["Nutrient 1", "Nutrient 2", "Nutrient 3"],
           "foodsToLimit": ["Food 1", "Food 2", "Food 3"],
           "mealPlan": {{
@@ -249,7 +246,7 @@ async def chat(request: chatRequest):
         if len(request.chat_history) == 1:
 
            system_prompt = f"""
-           You are a rehabilitation coach helping users recover from {request.disease}.
+           You are a rehabilitation coach helping users recover from {request.diseases}.
            The user has answered the following questions regarding their condition:\n
            {response_text}
         
