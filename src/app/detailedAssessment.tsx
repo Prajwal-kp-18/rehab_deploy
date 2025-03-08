@@ -123,23 +123,31 @@ export default function DetailedAssessment({
         });
         
         if (!res.ok) throw new Error(`Error ${res.status}: ${await res.text()}`);
+for(let i=0; i<diseases.length; i++) {
+  const taskResponse =  await fetch("/api/tasks/assign", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ disease: diseases[i], severity: "mild"}),
+  });
 
-        const taskResponse =  await fetch("/api/tasks/assign", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ diseases, severity: "mild"}),
-        });
+  
+  if (!taskResponse.ok) {
+    const errorText = await taskResponse.text();
+    throw new Error(`Error ${taskResponse.status}: ${errorText}`);
+  }
 
-        const ytResponse =  await fetch("/api/youtube-activiti/assign", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ diseases, severity: "mild"}),
-        });
+}
+        
 
-        if (!taskResponse.ok) {
-          const errorText = await taskResponse.text();
-          throw new Error(`Error ${taskResponse.status}: ${errorText}`);
+        for(let i=0; i<diseases.length; i++) {
+          const ytResponse =  await fetch("/api/youtube-activities/assign", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ disease: diseases[i], severity: "mild"}),
+          });
         }
+
+     
 
 
         if (!res.ok) {

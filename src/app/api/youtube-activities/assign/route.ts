@@ -61,7 +61,7 @@ const session = await auth();
     // Bulk create activities with transaction to replace existing ones
     await db.$transaction(async (prisma) => {
       await prisma.youtubeActivity.deleteMany({
-        where: { userId },
+        where: { userId, disorder },
       });
 
       await prisma.youtubeActivity.createMany({

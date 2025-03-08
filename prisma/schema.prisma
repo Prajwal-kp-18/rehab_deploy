@@ -10,114 +10,84 @@ datasource db {
 model User {
   id               String            @id @default(uuid())
   email            String            @unique
-  password         String // Hashed password for auth
+  password         String
   name             String
-  role             Role              @default(PATIENT) // PATIENT, DOCTOR, ADMIN
-  quizzes          Result[]
-  progress         Progress[]
-  sentMessages     Message[]         @relation(name: "SenderRelation")
-  receivedMessages Message[]         @relation(name: "ReceiverRelation")
+  role             Role              @default(PATIENT)
+  createdAt        DateTime          @default(now())
+  doctorId         String?
+  emailVerified    DateTime?
+  image            String?
+  accounts         Account[]
   assessments      Assessment[]
   badges           BadgeAssignment[]
+  DailyTask        DailyTask[]
+  GameProgress     GameProgress[]
+  receivedMessages Message[]         @relation("ReceiverRelation")
+  sentMessages     Message[]         @relation("SenderRelation")
+  progress         Progress[]
   quiz             Quiz[]
-  createdAt        DateTime          @default(now())
+  quizzes          Result?
   doctor           Doctor?           @relation("DoctorPatients", fields: [doctorId], references: [id])
-  doctorId         String?
-
-  emailVerified DateTime?
-  image         String?
-  accounts      Account[]
-  GameProgress GameProgress[]
-
-  DailyTask DailyTask[]
-
-  YoutubeActivity YoutubeActivity[]
+  YoutubeActivity  YoutubeActivity[]
 }
+
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String  
-  type               String
-  provider           String
-  providerAccountId  String 
-  refresh_token      String? @db.Text
-  access_token       String? @db.Text
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String? @db.Text
-  session_state      String?
- 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([provider, providerAccountId])
- 
 }
 
 model VerificationToken {
-  id        String  @id @default(cuid())
-  email     String
-  token     String @unique
-  expires   DateTime
-  
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
   @@unique([email, token])
 }
+
 model PasswordResetToken {
-  id        String  @id @default(cuid())
-  email     String
-  token     String @unique
-  expires   DateTime
-  
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
   @@unique([email, token])
-}
-
-
-enum Role {
-  PATIENT
-  DOCTOR
-  ADMIN
 }
 
 model Quiz {
   id        String   @id @default(uuid())
-  userId    String
   disorder  Disorder @unique
   score     Int
-  questions Json // Store questions as JSON
-  results   Result[]
+  questions Json
   category  String
   createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id])
-}
-
-enum Disorder {
-  PTSD
-  ANXIETY
-  DEPRESSION
-  OCD
-  EATING_DISORDER
-  STRESS
-  PANIC_DISORDER
-  SOCIAL_ANXIETY
-  ADDICTION
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  results   Result[]
 }
 
 model Result {
   id        String   @id @default(uuid())
   userId    String   @unique
   quizId    String
-  score     Int // Score from 1 to 10
-  severity  Severity // Mild, Moderate, Severe
+  score     Int
+  severity  Severity
   createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id])
-  quiz Quiz @relation(fields: [quizId], references: [id])
-}
-
-enum Severity {
-  MILD
-  MODERATE
-  SEVERE
+  quiz      Quiz     @relation(fields: [quizId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model Task {
@@ -137,9 +107,8 @@ model Progress {
   taskId    String
   completed Boolean  @default(false)
   createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id])
-  task Task @relation(fields: [taskId], references: [id])
+  task      Task     @relation(fields: [taskId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model Assessment {
@@ -149,16 +118,14 @@ model Assessment {
   score     Int
   feedback  String?
   createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model Doctor {
   id        String @id @default(uuid())
   userId    String @unique
   specialty String
-
-  patients User[] @relation("DoctorPatients")
+  patients  User[] @relation("DoctorPatients")
 }
 
 model Message {
@@ -167,16 +134,14 @@ model Message {
   receiverId String
   content    String
   sentAt     DateTime @default(now())
-
-  sender   User @relation(fields: [senderId], references: [id], name: "SenderRelation")
-  receiver User @relation(fields: [receiverId], references: [id], name: "ReceiverRelation")
+  receiver   User     @relation("ReceiverRelation", fields: [receiverId], references: [id])
+  sender     User     @relation("SenderRelation", fields: [senderId], references: [id])
 }
 
 model Badge {
-  id       String @id @default(uuid())
-  name     String @unique
-  criteria String
-
+  id              String            @id @default(uuid())
+  name            String            @unique
+  criteria        String
   BadgeAssignment BadgeAssignment[]
 }
 
@@ -185,76 +150,85 @@ model BadgeAssignment {
   userId    String
   badgeId   String
   awardedAt DateTime @default(now())
-
-  user  User  @relation(fields: [userId], references: [id])
-  badge Badge @relation(fields: [badgeId], references: [id])
+  badge     Badge    @relation(fields: [badgeId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model GameProgress {
-  id               String   @id @default(uuid())  
-  userId           String   // Player ID  
-  gameId           String   // Unique Game Identifier  
-  // gameType         String   // Quiz, Puzzle, Speed Challenge, etc.  
-  // sessionId        String?  // Optional, for tracking multiple sessions  
-  datePlayed       DateTime @default(now())  
-
-  // Core Gameplay Metrics  
-  score            Int      @default(0)  
-  completion       Boolean  @default(false)  
-  timeSpent        Int?     // Time in seconds  
-  accuracy         Float?     // % of correct answers  
-  difficulty       String   // Easy, Medium, Hard, Adaptive  
-  streak           Int?     @default(0) // Consecutive days played  
-
-  // Engagement & Behavioral Metrics  
-  // retries         Int?      @default(0) // Number of retries
-  dropOffRate         Float   @default(0) // True if user quits before finishing
-  frustrationScore Int?     // Tracks frustration level (rage quits, retries)
-
-  // Gamification & Achievements  
-  badgesEarned    String[]  // Array of unlocked achievements  
-  challengesDone  Int?      // Number of completed challenges
-  
-  // Game-Specific Data  
-  gameData        Json?     // Custom game-specific tracking (flexible field)  
-
-  user            User      @relation(fields: [userId], references: [id])
+  id               String   @id @default(uuid())
+  userId           String
+  gameId           String
+  datePlayed       DateTime @default(now())
+  score            Int      @default(0)
+  completion       Boolean  @default(false)
+  timeSpent        Int?
+  accuracy         Float?
+  difficulty       String
+  streak           Int?     @default(0)
+  frustrationScore Int?
+  badgesEarned     String[]
+  challengesDone   Int?
+  gameData         Json?
+  dropOffRate      Float    @default(0)
+  user             User     @relation(fields: [userId], references: [id])
 }
 
 model DailyTask {
-  id          String   @id @default(uuid())  
-  userId      String   // Foreign key linking to User
-  disorder    String   // Depression, Anxiety, PTSD, etc.
-  severity    String   // mild, moderate, severe
-  week        Int      // 1 to 5
-  day         Int      // 1 to 7
-  task        String   // Task description
-  status      String   @default("pending") // pending, completed, skipped
-  reflection  String?  // User feedback for weekly adjustments
-  createdAt   DateTime @default(now())
-
-  user        User     @relation(fields: [userId], references: [id])
+  id         String   @id @default(uuid())
+  userId     String
+  disorder   String
+  severity   String
+  week       Int
+  day        Int
+  task       String
+  status     String   @default("pending")
+  reflection String?
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id])
 }
 
 model Streak {
   id          Int      @id @default(autoincrement())
   name        String
   description String
-  icon        String?   // Store icon as a string (e.g., URL or class name)
-  achieved    Boolean 
+  icon        String?
+  achieved    Boolean
   date        DateTime @default(now())
 }
 
 model YoutubeActivity {
-  id          String    @id @default(uuid())
-  userId      String    // Foreign key linking to User
-  disorder    String    // Depression, Anxiety, PTSD, etc.
-  severity    String    // mild, moderate, severe
-  week        Int       // 1 to 5
-  day         Int       // 1 to 7
-  activity    String    // YouTube activity description (e.g., combined video URLs/titles)
-  status      String    @default("pending") // pending, completed, skipped
-  reflection  String?   // User feedback
+  id         String  @id @default(uuid())
+  userId     String
+  disorder   String
+  severity   String
+  week       Int
+  day        Int
+  activity   String
+  status     String  @default("pending")
+  reflection String?
+  user       User    @relation(fields: [userId], references: [id])
+}
 
-  user        User      @relation(fields: [userId], references: [id])
+enum Role {
+  PATIENT
+  DOCTOR
+  ADMIN
+}
+
+enum Disorder {
+  PTSD
+  ANXIETY
+  DEPRESSION
+  OCD
+  EATING_DISORDER
+  STRESS
+  PANIC_DISORDER
+  SOCIAL_ANXIETY
+  ADDICTION
+}
+
+enum Severity {
+  MILD
+  MODERATE
+  SEVERE
 }
