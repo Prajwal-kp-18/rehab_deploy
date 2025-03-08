@@ -69,6 +69,7 @@ export async function GET(req: Request) {
       }
     }
 
+
     const progress: ProgressData = {
       totalTasks,
       completedTasks,
@@ -77,7 +78,22 @@ export async function GET(req: Request) {
       completionRate: Number(completionRate.toFixed(2)),
       weeklyProgress,
     };
+const progressPercentage = totalTasks > 0 
+  ? Number(((completedTasks / totalTasks) * 100).toFixed(2)) 
+  : 0; // Avoid division by zero
 
+  let severity: "mild" | "moderate" | "severe";
+  if (progressPercentage <= 40) severity = "mild";
+  else if (progressPercentage <= 79) severity = "moderate";
+  else severity = "severe";
+  const disorder = user.disorder;  
+  const res = await fetch("api/tasks/assign", { method: "POST", 
+    body: JSON.stringify({ disease: disorder, severity }),
+  });
+
+  if (!res.ok) {
+    console.error("Error assigning tasks:");
+  }
     return NextResponse.json(progress);
   } catch (error) {
     console.error("Error retrieving progress:", error);
