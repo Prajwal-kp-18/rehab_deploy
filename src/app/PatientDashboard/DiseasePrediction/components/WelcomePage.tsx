@@ -271,3 +271,55 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onGetStarted }) => {
 };
 
 export default WelcomePage;
+// 'use client';
+// import React from 'react';
+// import { motion } from 'framer-motion';
+// import { Stethoscope } from 'lucide-react';
+// import type { WelcomePageProps } from '../types';
+
+// const WelcomePage: React.FC<WelcomePageProps> = ({ onGetStarted }) => {
+//   return (
+//     <div className="min-h-[80vh] flex flex-col items-center justify-center">
+//       <motion.div
+//         initial={{ scale: 0 }}
+//         animate={{ scale: 1 }}
+//         transition={{ duration: 0.5 }}
+//         className="text-blue-600 mb-8"
+//       >
+//         <Stethoscope size={64} />
+//       </motion.div>
+      
+//       <motion.h1
+//         initial={{ opacity: 0, y: 20 }}
+//         animate={{ opacity: 1, y: 0 }}
+//         transition={{ delay: 0.2 }}
+//         className="text-4xl md:text-5xl font-bold text-gray-800 mb-6 text-center"
+//       >
+//         AI Symptom Checker
+//       </motion.h1>
+      
+//       <motion.p
+//         initial={{ opacity: 0, y: 20 }}
+//         animate={{ opacity: 1, y: 0 }}
+//         transition={{ delay: 0.4 }}
+//         className="text-lg text-gray-600 mb-8 text-center max-w-2xl px-4"
+//       >
+//         Get instant insights about your health symptoms using our advanced AI-powered diagnostic tool.
+//       </motion.p>
+      
+//       <motion.button
+//         initial={{ opacity: 0, y: 20 }}
+//         animate={{ opacity: 1, y: 0 }}
+//         transition={{ delay: 0.6 }}
+//         whileHover={{ scale: 1.05 }}
+//         whileTap={{ scale: 0.95 }}
+//         onClick={onGetStarted}
+//         className="bg-blue-600 text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:bg-blue-700 transition-colors"
+//       >
+//         Get Started
+//       </motion.button>
+//     </div>
+//   );
+// };
+
+// export default WelcomePage;
