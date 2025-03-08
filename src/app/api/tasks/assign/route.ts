@@ -50,9 +50,9 @@ export async function POST(req: NextRequest) {
     const disorder = disease;
     const session = await auth();
     const userId = await session?.user.id;
-    console.log(req);
-    console.log(disorder);
-    console.log(severity);
+    // console.log(req);
+    // console.log(disorder);
+    // console.log(severity);
 
     if (!userId || !disorder || !severity) {
       return NextResponse.json(

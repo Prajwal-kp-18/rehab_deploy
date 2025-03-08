@@ -21,8 +21,9 @@ const getRandomKeyword = (keywords: string[]): string => {
 export async function POST(req: NextRequest) {
   try {
     const { disease, severity } = await req.json();
-    const disorder = disease;
     const session = await auth();
+    const disorder = disease;
+    
     const userId = await session?.user.id;
     // Validation
     if (!userId || !disorder) {
