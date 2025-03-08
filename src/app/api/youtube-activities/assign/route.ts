@@ -79,8 +79,9 @@ const session = await auth();
 // PATCH: Update YouTube activity status
 export async function PATCH(req: NextRequest) {
   try {
-    const { userId, day, status, reflection } = await req.json();
-
+    const { day, status, reflection } = await req.json();
+    const session = await auth();
+    const userId  = await session?.user.id;
     // Validation
     if (!userId || !day || !status) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -90,9 +91,9 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid status value' }, { status: 400 });
     }
 
-    if (day < 1 || day > 7) {
-      return NextResponse.json({ error: 'Invalid day range' }, { status: 400 });
-    }
+    // if (day < 1 || day > 7) {
+    //   return NextResponse.json({ error: 'Invalid day range' }, { status: 400 });
+    // }
 
 // Update activity
 const updated = await db.youtubeActivity.updateMany({
