@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { Router } from "next/router";
 
 interface DailyTask {
   id: string;
@@ -76,13 +77,21 @@ const TaskManager = () => {
       method: "GET",
     });
     const data = await response.json();
-    console.log(data);
+    console.log("API Response:", data);
+    if (!response.ok) {
+      console.error("Failed to fetch video:", response.status);
+      return;
+    }
     if (data.error) {
       console.error("Error fetching video:", data.error);
       return;
     }
-    window.location.href = `/video?
-    query=${encodeURIComponent(query)}`;
+    const { id } = data;
+    if (!id) {
+      console.error("No video ID found in response");
+      return;
+    }
+    window.location.href = `/video?query=${id}`;
   };
   const handleTakeActivity2 = async (taskId: string) => {
     await fetch(`/api/youtube-activities/assign`, {
