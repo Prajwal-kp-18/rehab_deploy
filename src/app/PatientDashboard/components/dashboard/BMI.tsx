@@ -1,4 +1,3 @@
-
 // import dynamic from "next/dynamic";
 // const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 // import { useTheme } from '@mui/material/styles';
@@ -123,17 +122,36 @@ const BMICalculator = () => {
   const [weight, setWeight] = useState<number>(68);
   const [height, setHeight] = useState<number>(160);
 
-  const bmi: number = (weight / ((height / 100) ** 2));
+  const bmi: number = weight / (height / 100) ** 2;
   let category = "Normal";
   if (bmi < 18.5) category = "Underweight";
   else if (bmi > 24.9) category = "Overweight";
 
   return (
-    <DashboardCard title="Body Mass Index" sx={{ backgroundColor: "#f4f6f8", padding: 3 }}>
-      <Box display="flex" justifyContent="center" alignItems="center" gap={2} p={2}>
-        <Paper elevation={3} sx={{ padding: 1, textAlign: "center", backgroundColor: "#e3f2fd", width: 140 }}>
+    <DashboardCard
+      title="Body Mass Index"
+      sx={{ backgroundColor: "#f4f6f8", padding: 3 }}
+    >
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        gap={2}
+        p={2}
+      >
+        <Paper
+          elevation={3}
+          sx={{
+            padding: 1,
+            textAlign: "center",
+            backgroundColor: "#e3f2fd",
+            width: 140,
+          }}
+        >
           <Typography variant="h6">Weight</Typography>
-          <Typography variant="h5" fontWeight={700} color="#1e88e5">{weight} kg</Typography>
+          <Typography variant="h5" fontWeight={700} color="#1e88e5">
+            {weight} kg
+          </Typography>
           <Slider
             value={weight}
             onChange={(e, val) => setWeight(Array.isArray(val) ? val[0] : val)}
@@ -143,9 +161,19 @@ const BMICalculator = () => {
             sx={{ width: 120, color: "#1e88e5" }}
           />
         </Paper>
-        <Paper elevation={3} sx={{ padding: 1, textAlign: "center", backgroundColor: "#fce4ec", width: 140 }}>
+        <Paper
+          elevation={3}
+          sx={{
+            padding: 1,
+            textAlign: "center",
+            backgroundColor: "#fce4ec",
+            width: 140,
+          }}
+        >
           <Typography variant="h6">Height</Typography>
-          <Typography variant="h5" fontWeight={700} color="#d81b60">{height} cm</Typography>
+          <Typography variant="h5" fontWeight={700} color="#d81b60">
+            {height} cm
+          </Typography>
           <Slider
             value={height}
             onChange={(e, val) => setHeight(Array.isArray(val) ? val[0] : val)}
@@ -157,9 +185,20 @@ const BMICalculator = () => {
         </Paper>
       </Box>
       <Box mt={3} textAlign="center">
-        <Typography variant="h5" fontWeight={700} color="#4caf50">BMI: {bmi}</Typography>
-        <Typography variant="subtitle1" color="textSecondary">Category: {category}</Typography>
-        <Box mt={2} width="80%" mx="auto" height={8} bgcolor="#e0e0e0" borderRadius={4}>
+        <Typography variant="h5" fontWeight={700} color="#4caf50">
+          BMI: {bmi}
+        </Typography>
+        <Typography variant="subtitle1" color="textSecondary">
+          Category: {category}
+        </Typography>
+        <Box
+          mt={2}
+          width="80%"
+          mx="auto"
+          height={8}
+          bgcolor="#e0e0e0"
+          borderRadius={4}
+        >
           <Box
             width={bmi < 18.5 ? "25%" : bmi > 24.9 ? "75%" : "50%"}
             height="100%"
