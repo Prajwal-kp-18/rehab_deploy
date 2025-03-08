@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Router } from "next/router";
+import Link from "next/link";
 
 interface DailyTask {
   id: string;
@@ -236,13 +237,14 @@ const TaskManager = () => {
               </span>
 
               <div className="flex items-center mt-4 justify-start gap-2">
-                <Button
-                  onClick={() => handleVideo(task.activity)}
-                  disabled={task.status !== "pending"}
+                <Link
+                  href="/youtube"
                   className="bg-green-500 text-white px-4 py-2 rounded-lg transition-transform transform hover:scale-105 disabled:opacity-80"
                 >
+                  {" "}
                   Take Activity
-                </Button>
+                </Link>
+
                 <Button
                   onClick={() => handleTakeActivity2(task.id)}
                   disabled={task.status !== "pending"}
