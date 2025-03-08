@@ -20,9 +20,13 @@ const getRandomKeyword = (keywords: string[]): string => {
 // POST: Assign random YouTube keywords for 7 days to a user
 export async function POST(req: NextRequest) {
   try {
-    const { disorder } = await req.json();
-const session = await auth();
+    const { disease, severity } = await req.json();
+    const session = await auth();
+    const disorder = disease;
     const userId  = await session?.user.id;
+    console.log(req);
+    console.log(disorder);
+    console.log(severity);
     // Validation
     if (!userId || !disorder) {
       return NextResponse.json({ error: 'Missing userId or disorder' }, { status: 400 });
@@ -71,8 +75,8 @@ const session = await auth();
 
     return NextResponse.json({ message: 'YouTube activities assigned successfully!' }, { status: 201 });
   } catch (error) {
-    console.error('Error assigning YouTube activities:', error);
-    return NextResponse.json({ error: 'Failed to assign YouTube activities' }, { status: 500 });
+    console.error('Error assigning YouTube activities:');
+    return NextResponse.json({ error: `Failed to assign YouTube activities: ${error}` }, { status: 500 });
   }
 }
 
@@ -110,7 +114,7 @@ const updated = await db.youtubeActivity.updateMany({
 
   return NextResponse.json({ message: 'YouTube activity updated successfully!' });
 } catch (error) {
-  console.error('Error updating YouTube activity:', error);
+  console.error('Error updating YouTube activity:');
   return NextResponse.json({ error: 'Failed to update YouTube activity' }, { status: 500 });
 }
 }
@@ -143,7 +147,7 @@ try {
 
   return NextResponse.json(activities);
 } catch (error) {
-  console.error('Error retrieving YouTube activities:', error);
+  console.error('Error retrieving YouTube activities:');
   return NextResponse.json({ error: 'Failed to retrieve YouTube activities' }, { status: 500 });
 }
 }
