@@ -30,6 +30,8 @@ model User {
   GameProgress GameProgress[]
 
   DailyTask DailyTask[]
+
+  YoutubeActivity YoutubeActivity[]
 }
 model Account {
   id                 String  @id @default(cuid())
@@ -243,3 +245,16 @@ model Streak {
   date        DateTime @default(now())
 }
 
+model YoutubeActivity {
+  id          String    @id @default(uuid())
+  userId      String    // Foreign key linking to User
+  disorder    String    // Depression, Anxiety, PTSD, etc.
+  severity    String    // mild, moderate, severe
+  week        Int       // 1 to 5
+  day         Int       // 1 to 7
+  activity    String    // YouTube activity description (e.g., combined video URLs/titles)
+  status      String    @default("pending") // pending, completed, skipped
+  reflection  String?   // User feedback
+
+  user        User      @relation(fields: [userId], references: [id])
+}

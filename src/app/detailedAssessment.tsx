@@ -130,6 +130,12 @@ export default function DetailedAssessment({
           body: JSON.stringify({ diseases, severity: "mild"}),
         });
 
+        const ytResponse =  await fetch("/api/youtube-activiti/assign", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ diseases, severity: "mild"}),
+        });
+
         if (!taskResponse.ok) {
           const errorText = await taskResponse.text();
           throw new Error(`Error ${taskResponse.status}: ${errorText}`);

@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
     // Bulk create tasks with transaction to avoid duplicates
     await db.$transaction(async (prisma) => {
       await prisma.dailyTask.deleteMany({
-        where: { userId, severity, disorder },
+        where: { userId, disorder },
       });
 
       await prisma.dailyTask.createMany({
