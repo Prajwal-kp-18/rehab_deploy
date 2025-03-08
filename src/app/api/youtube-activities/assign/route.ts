@@ -94,11 +94,11 @@ export async function POST(req: NextRequest) {
 // PATCH: Update YouTube activity status
 export async function PATCH(req: NextRequest) {
   try {
-    const { day, status, reflection } = await req.json();
+    const { status, videoId } = await req.json();
     const session = await auth();
     const userId = await session?.user.id;
     // Validation
-    if (!userId || !day || !status) {
+    if (!userId || !videoId || !status) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -117,20 +117,16 @@ export async function PATCH(req: NextRequest) {
     // }
 
     // Update activity
-    const updated = await db.youtubeActivity.updateMany({
-      where: { userId, day },
+    const updated = await db.youtubeActivity.update({
+      where: { id: videoId },
       data: {
         status,
-        reflection: reflection || null,
       },
     });
 
-    if (updated.count === 0) {
-      return NextResponse.json(
-        { error: "No activity found to update" },
-        { status: 404 }
-      );
-    }
+    // if (updated.count === 0) {
+    //   return NextResponse.json({ error: 'No activity found to update' }, { status: 404 });
+    // }
 
     return NextResponse.json({
       message: "YouTube activity updated successfully!",
