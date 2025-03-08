@@ -551,7 +551,7 @@ export default function Dashboard({ initialData }: DashboardProps) {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {gameData.slice(0, 5).map((game) => (
+                    {gameData.slice(0, gameData.length).map((game) => (
                       <tr key={game.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {new Date(game.datePlayed).toLocaleDateString()}

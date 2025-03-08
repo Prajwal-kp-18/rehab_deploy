@@ -13,6 +13,7 @@ interface TasksData {
 
 // Helper function to get a random keyword from an array
 const getRandomKeyword = (keywords: string[]): string => {
+  
   const randomIndex = Math.floor(Math.random() * keywords.length);
   return keywords[randomIndex];
 };
@@ -43,11 +44,15 @@ export async function POST(req: NextRequest) {
     if (!tasks[disorder] || !tasks[disorder].youtube_keywords) {
       return NextResponse.json({ error: 'Unsupported disorder or no YouTube keywords found' }, { status: 400 });
     }
+    tasks[disorder].youtube_keywords.map((keyword: string) => ({
 
+    }));
     const keywords = tasks[disorder].youtube_keywords;
-
+    console.log(keywords);
+    console.log(tasks);
     // Generate activities for 7 days
     const activities: any[] = [];
+    for (let week = 1; week <= 5; week++) {
     for (let day = 1; day <= 7; day++) {
       activities.push({
           userId,
@@ -56,10 +61,10 @@ export async function POST(req: NextRequest) {
           status: 'pending' as const,
           reflection: null,
           severity: '',
-          week: 1,
+          week,
           disorder: disorder,
       });
-    }
+    }}
 
 
     // Bulk create activities with transaction to replace existing ones
