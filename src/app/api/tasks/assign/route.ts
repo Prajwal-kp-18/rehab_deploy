@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import tasksData from "@/lib/data/tasks.json";
@@ -151,10 +152,12 @@ export async function POST(req: NextRequest) {
 // PATCH: Update task status
 export async function PATCH(req: NextRequest) {
   try {
-    const { userId, week, day, status, reflection } = await req.json();
+    const {taskId, status} = await req.json();
+    const session = await auth();
+    const userId = await session?.user.id;
 
     // Validation
-    if (!userId || !week || !day || !status) {
+    if (!userId || !taskId || !status) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -168,28 +171,27 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    if (week < 1 || week > 5 || day < 1 || day > 7) {
-      return NextResponse.json(
-        { error: "Invalid week or day range" },
-        { status: 400 }
-      );
-    }
+    // if (week < 1 || week > 5 || day < 1 || day > 7) {
+    //   return NextResponse.json(
+    //     { error: "Invalid week or day range" },
+    //     { status: 400 }
+    //   );
+    // }
 
     // Update tasks
-    const updated = await db.dailyTask.updateMany({
-      where: { userId, week, day },
+    const updated = await db.dailyTask.update({
+      where: { id: taskId},
       data: {
         status,
-        reflection: reflection || null,
       },
     });
 
-    if (updated.count === 0) {
-      return NextResponse.json(
-        { error: "No tasks found to update" },
-        { status: 404 }
-      );
-    }
+    // if (updated.count === 0) {
+    //   return NextResponse.json(
+    //     { error: "No tasks found to update" },
+    //     { status: 404 }
+    //   );
+    // }
 
     return NextResponse.json({ message: "Task updated successfully!" });
   } catch (error) {
