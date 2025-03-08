@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Trophy, Flame, Medal, Target } from "lucide-react";
 
 function App() {
@@ -7,6 +7,15 @@ function App() {
     weeklyProgress: 85,
     monthlyGoal: 92,
   };
+  const[progressData, setProgressData] = useState<any | null>(null);
+  useEffect(() => {
+    fetch("/api/tasks/progress")
+      .then((response) => response.json())
+      .then((data) => {
+        progressData(data);
+        console.log(data);
+      });
+  }, []);
 
   const badges = [
     {
