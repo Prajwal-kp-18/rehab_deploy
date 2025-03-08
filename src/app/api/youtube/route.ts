@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
 const YOUTUBE_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search";
-const YOUTUBE_VIDEO_DETAILS_URL = "https://www.googleapis.com/youtube/v3/videos";
+const YOUTUBE_VIDEO_DETAILS_URL =
+  "https://www.googleapis.com/youtube/v3/videos";
 
 interface VideoStats {
   id: string;
@@ -42,27 +43,35 @@ const getVideoDetails = async (videoId: string): Promise<VideoStats | null> => {
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const query = searchParams.get("query");
-
+  console.log(query);
   if (!query) {
-    return NextResponse.json({ error: "Query parameter is required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Query parameter is required" },
+      { status: 400 }
+    );
   }
 
   try {
     // Search YouTube for videos related to the query
     const searchResponse = await fetch(
-      `${YOUTUBE_SEARCH_URL}?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=5&key=${YOUTUBE_API_KEY}`
+      `${YOUTUBE_SEARCH_URL}?part=snippet&q=${encodeURIComponent(
+        query
+      )}&type=video&maxResults=5&key=${YOUTUBE_API_KEY}`
     );
     const searchData = await searchResponse.json();
 
-    console.log(searchResponse)
+    console.log(searchResponse);
 
     if (!YOUTUBE_API_KEY) {
-        return NextResponse.json({ error: "YouTube API key is missing" }, { status: 500 });
-      }
+      return NextResponse.json(
+        { error: "YouTube API key is missing" },
+        { status: 500 }
+      );
+    }
 
-      if (!searchData.items || searchData.items.length === 0) {
-        return NextResponse.json({ error: "No videos found" }, { status: 404 });
-      }
+    if (!searchData.items || searchData.items.length === 0) {
+      return NextResponse.json({ error: "No videos found" }, { status: 404 });
+    }
 
     // Fetch video details
     const videoPromises = searchData.items.map(async (video: any) => {
@@ -79,15 +88,20 @@ export async function GET(req: NextRequest) {
       return null;
     });
 
-    const videos = (await Promise.all(videoPromises)).filter((v): v is VideoStats => v !== null);
-    console.log(videos);
+    const videos = (await Promise.all(videoPromises)).filter(
+      (v): v is VideoStats => v !== null
+    );
 
     // Sort by likes first, then views
     videos.sort((a, b) => b.likes - a.likes || b.views - a.views);
+    console.log("EXIT VIDEO", videos[0].id);
 
-    return NextResponse.json({ bestVideo: videos[0], allVideos: videos });
+    return NextResponse.json({ bestVideo: videos[0].id }, { status: 201 });
   } catch (error) {
     console.error("Error fetching videos:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }

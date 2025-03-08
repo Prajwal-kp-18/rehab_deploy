@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { Router } from "next/router";
 
 interface DailyTask {
   id: string;
@@ -20,7 +21,7 @@ const TaskManager = () => {
   const [tasks, setTasks] = useState<
     Record<number, Record<number, DailyTask[]>>
   >({});
-  const [videos, setVideos] = useState<any[]>();
+  const [videos, setVideos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedWeek, setSelectedWeek] = useState<number>(1);
   const [selectedDay, setSelectedDay] = useState<number>(1);
@@ -71,6 +72,27 @@ const TaskManager = () => {
     }));
   };
 
+  const handleVideo = async (query: any) => {
+    const response = await fetch(`/api/youtube?query=${query}`, {
+      method: "GET",
+    });
+    const data = await response.json();
+    console.log("API Response:", data);
+    if (!response.ok) {
+      console.error("Failed to fetch video:", response.status);
+      return;
+    }
+    if (data.error) {
+      console.error("Error fetching video:", data.error);
+      return;
+    }
+    const { id } = data;
+    if (!id) {
+      console.error("No video ID found in response");
+      return;
+    }
+    window.location.href = `/video?query=${id}`;
+  };
   const handleTakeActivity2 = async (taskId: string) => {
     await fetch(`/api/youtube-activities/assign`, {
       method: "PATCH",
@@ -78,15 +100,15 @@ const TaskManager = () => {
       body: JSON.stringify({ taskId, status: "completed" }),
     });
 
-    setVideos((prev) => ({
-      ...prev,
-      [selectedWeek]: {
-        ...prev[selectedWeek],
-        [selectedDay]: prev[selectedWeek][selectedDay].map((task) =>
-          task.id === taskId ? { ...task, status: "completed" } : task
-        ),
-      },
-    }));
+    // setVideos((prev) => ({
+    //   ...prev,
+    //   [selectedWeek]: {
+    //     ...prev[selectedWeek],
+    //     [selectedDay]: prev[selectedWeek][selectedDay].map((task) =>
+    //       task.id === taskId ? { ...task, status: "completed" } : task
+    //     ),
+    //   },
+    // }));
   };
 
   return (
@@ -215,7 +237,7 @@ const TaskManager = () => {
 
               <div className="flex items-center mt-4 justify-start gap-2">
                 <Button
-                  onClick={() => handleVideo(task.id)}
+                  onClick={() => handleVideo(task.activity)}
                   disabled={task.status !== "pending"}
                   className="bg-green-500 text-white px-4 py-2 rounded-lg transition-transform transform hover:scale-105 disabled:opacity-80"
                 >
@@ -228,7 +250,6 @@ const TaskManager = () => {
                 >
                   Complete
                 </Button>
-
               </div>
             </motion.div>
           ))
