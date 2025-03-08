@@ -1,48 +1,41 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
-import { Trophy, Flame, Medal, Target } from "lucide-react";
+import { Flame, Trophy, Target } from "lucide-react";
+
+interface ProgressData {
+  totalTasks: number;
+  completedTasks: number;
+  pendingTasks: number;
+  skippedTasks: number;
+  completionRate: number;
+  weeklyProgress: { week: number; completed: number; total: number }[];
+}
 
 function App() {
-  const streakData = {
-    currentStreak: 12,
-    weeklyProgress: 85,
-    monthlyGoal: 92,
-  };
-  const[progressData, setProgressData] = useState<any | null>(null);
+  const [progressData, setProgressData] = useState<ProgressData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
-    fetch("/api/tasks/progress")
-      .then((response) => response.json())
-      .then((data) => {
-        progressData(data);
-        console.log(data);
-      });
+    const fetchProgressData = async () => {
+      try {
+        const response = await fetch("/api/tasks/progress");
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        const data: ProgressData = await response.json();
+        setProgressData(data);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "An unknown error occurred"
+        );
+      }
+    };
+
+    fetchProgressData();
   }, []);
 
-  const badges = [
-    {
-      id: 1,
-      name: "Goal Crusher",
-      description: "Exceeded monthly targets",
-      icon: <Target className="w-8 h-8 text-gray-600" />,
-      achieved: true,
-      date: "2024-03-15",
-    },
-    {
-      id: 2,
-      name: "Consistency King",
-      description: "30-day perfect streak",
-      icon: <Trophy className="w-8 h-8 text-gray-600" />,
-      achieved: false,
-      date: null,
-    },
-    {
-      id: 3,
-      name: "Early Bird",
-      description: "Morning routine master",
-      icon: <Flame className="w-8 h-8 text-gray-600" />,
-      achieved: true,
-      date: "2024-03-10",
-    },
-  ];
+  if (!progressData) return <div>Loading...</div>;
 
   return (
     <div className="min-h-screen bg-white p-6">
@@ -50,7 +43,7 @@ function App() {
         {/* Header */}
         <div className="bg-gray-100 rounded-2xl p-8 shadow-xl border border-gray-300">
           <h1 className="text-4xl font-bold text-black mb-2">My Progress</h1>
-          <p className="text-gray-600">Track your streaks and achievements</p>
+          <p className="text-gray-600">Track your tasks and achievements</p>
         </div>
 
         {/* Stats Grid */}
@@ -59,9 +52,9 @@ function App() {
             <div className="flex items-center space-x-4">
               <Flame className="w-12 h-12 text-gray-600" />
               <div>
-                <p className="text-gray-600">Current Streak</p>
+                <p className="text-gray-600">Total Tasks</p>
                 <p className="text-3xl font-bold text-black">
-                  {streakData.currentStreak} days
+                  {progressData.totalTasks}
                 </p>
               </div>
             </div>
@@ -71,9 +64,9 @@ function App() {
             <div className="flex items-center space-x-4">
               <Trophy className="w-12 h-12 text-gray-600" />
               <div>
-                <p className="text-gray-600">Weekly Progress</p>
+                <p className="text-gray-600">Completed Tasks</p>
                 <p className="text-3xl font-bold text-black">
-                  {streakData.weeklyProgress}%
+                  {progressData.completedTasks}
                 </p>
               </div>
             </div>
@@ -83,65 +76,48 @@ function App() {
             <div className="flex items-center space-x-4">
               <Target className="w-12 h-12 text-gray-600" />
               <div>
-                <p className="text-gray-600">Monthly Goal</p>
+                <p className="text-gray-600">Completion Rate</p>
                 <p className="text-3xl font-bold text-black">
-                  {streakData.monthlyGoal}%
+                  {progressData.completionRate}%
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Badges Section */}
+        {/* Weekly Progress Section */}
         <div className="bg-gray-100 rounded-2xl p-8 shadow-xl border border-gray-300">
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold text-black">Badges</h2>
-            <p className="text-gray-600">Your earned achievements</p>
-          </div>
-
+          <h2 className="text-2xl font-bold text-black mb-4">
+            Weekly Progress
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {badges.map((badge) => (
-              <div
-                key={badge.id}
-                className={`relative p-6 rounded-xl border transition-all duration-300 hover:transform hover:scale-105
-                  ${
-                    badge.achieved
-                      ? "border-gray-400 bg-gray-200"
-                      : "border-gray-400 bg-gray-100"
-                  }`}
-              >
-                <div className="flex items-start space-x-4">
-                  <div
-                    className={`p-3 rounded-lg ${
-                      badge.achieved ? "bg-gray-300" : "bg-gray-200"
-                    }`}
-                  >
-                    {badge.icon}
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-black flex items-center gap-2">
-                      {badge.name}
-                      {badge.achieved && (
-                        <Medal className="w-4 h-4 text-gray-600" />
-                      )}
-                    </h3>
-                    <p className="text-sm text-gray-600 mt-1">
-                      {badge.description}
-                    </p>
-                    {badge.achieved && (
-                      <p className="text-xs text-gray-600 mt-2">
-                        Earned{" "}
-                        {badge.date
-                          ? new Date(badge.date).toLocaleDateString()
-                          : "N/A"}
-                      </p>
-                    )}
-                  </div>
+            {progressData.weeklyProgress &&
+            progressData.weeklyProgress.length > 0 ? (
+              progressData.weeklyProgress.map((week) => (
+                <div
+                  key={week.week}
+                  className="bg-gray-200 rounded-xl p-6 shadow-md border border-gray-300"
+                >
+                  <p className="text-gray-600">Week {week.week}</p>
+                  <p className="text-2xl font-bold text-black">
+                    {week.completed} / {week.total} tasks completed
+                  </p>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-gray-600">
+                No weekly progress data available.
+              </p>
+            )}
           </div>
         </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 p-4 rounded">
+            <p>{error}</p>
+          </div>
+        )}
       </div>
     </div>
   );

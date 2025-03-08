@@ -1410,7 +1410,50 @@
       "Gratitude as a Habit",
       "Planning for Tough Days",
       "Celebrating Your Journey"
-    ]
+    ],
+    "games": {
+      "mild": [
+        {
+          "level": 1,
+          "title": "Color Rush",
+          "description": "Test your reaction time with fast-changing color prompts",
+          "component": "ColorRush",
+          "path": "http://localhost:3000/depression/games"
+        }
+      ],
+      "moderate": [
+        {
+          "level": 2,
+          "title": "Word Sprint",
+          "description": "Form words from scrambled letters against the clock",
+          "component": "WordSprint",
+          "path": "http://localhost:3000/depression/games"
+        },
+        {
+          "level": 3,
+          "title": "Treasure Hunt",
+          "description": "Solve puzzles to discover hidden treasures",
+          "component": "TreasureHunt",
+          "path": "http://localhost:3000/depression/games"
+        }
+      ],
+      "severe": [
+        {
+          "level": 4,
+          "title": "Path Builder",
+          "description": "Connect tiles to create the perfect path",
+          "component": "PathBuilder",
+          "path": "http://localhost:3000/depression/games"
+        },
+        {
+          "level": 5,
+          "title": "Shadow Chase",
+          "description": "Outrun the shadows and collect light orbs",
+          "component": "ShadowChase",
+          "path": "http://localhost:3000/depression/games"
+        }
+      ]
+    }
   },
   "OCD": {
     "tasks": {
@@ -4180,128 +4223,29 @@
         "complement": "This routine complements therapy or other treatments for comprehensive care."
       }
     },
-    "youtube_keywords": {
-      "Week 1": {
-        "Focus": "Building Awareness and Grounding",
-        "Days": [
-          {
-            "Day": 1,
-            "Title": "Guided Meditation for Trauma Healing & PTSD",
-            "Link": "https://www.youtube.com/watch?v=4EaMJOo1jks"
-          },
-          {
-            "Day": 2,
-            "Title": "5-4-3-2-1 Grounding Exercise",
-            "Link": "https://www.youtube.com/watch?v=MF5rL7p8aJc"
-          },
-          {
-            "Day": 3,
-            "Title": "Body Scan Meditation",
-            "Link": "https://www.youtube.com/watch?v=Q5cQMq1zzg4"
-          },
-          {
-            "Day": 4,
-            "Title": "How to Create a Safe Space in Your Mind",
-            "Link": "https://www.youtube.com/watch?v=ddwuYfefWAk"
-          },
-          {
-            "Day": 5,
-            "Title": "Calming the Nervous System: Breathwork for PTSD",
-            "Link": "https://www.youtube.com/watch?v=NJ8HqFrvAik"
-          },
-          {
-            "Day": 6,
-            "Title": "What Is PTSD? Understanding the Science",
-            "Link": "https://www.youtube.com/watch?v=yb1jYyDMF4g"
-          },
-          {
-            "Day": 7,
-            "Title": "Reflective Journaling: Mindfulness for PTSD",
-            "Link": "https://www.youtube.com/watch?v=X0ayh8Xr-Yw"
-          }
-        ]
-      },
-      "Week 2": {
-        "Focus": "Emotion Processing and Release",
-        "Days": [
-          {
-            "Day": 8,
-            "Title": "Understanding PTSD Triggers: A Guided Session",
-            "Link": "https://www.youtube.com/watch?v=ahErU54fKxM"
-          },
-          {
-            "Day": 9,
-            "Title": "Grounding Through the 5 Senses",
-            "Link": "https://www.youtube.com/watch?v=pt1cJ2moBW8"
-          },
-          {
-            "Day": 10,
-            "Title": "Art Therapy for PTSD — Creative Release Exercise",
-            "Link": "https://www.youtube.com/watch?v=JcJUnS-8geM"
-          },
-          {
-            "Day": 11,
-            "Title": "Journaling for Trauma Healing",
-            "Link": "https://www.youtube.com/watch?v=GDO_7amk8w8"
-          },
-          {
-            "Day": 12,
-            "Title": "Emotional Regulation: Managing PTSD Mood Swings",
-            "Link": "https://www.youtube.com/watch?v=7RjaBZBaxG8"
-          },
-          {
-            "Day": 13,
-            "Title": "Guided Relaxation: Finding Calm After an Anxiety Attack",
-            "Link": "https://www.youtube.com/watch?v=lqcM-F1uFr8"
-          },
-          {
-            "Day": 14,
-            "Title": "Reflect and Reset: Building Emotional Awareness",
-            "Link": "https://www.youtube.com/watch?v=oJWJbjeQT14"
-          }
-        ]
-      },
-      "Week 3": {
-        "Focus": "Reclaiming Safety and Self-Compassion",
-        "Days": [
-          {
-            "Day": 15,
-            "Title": "Creating a Safe Space in Your Mind and Environment",
-            "Link": "https://www.youtube.com/watch?v=pUe8nH5_lx0"
-          },
-          {
-            "Day": 16,
-            "Title": "Affirmations for PTSD Recovery and Strength",
-            "Link": "https://www.youtube.com/watch?v=sRmjYvt5gIY"
-          },
-          {
-            "Day": 17,
-            "Title": "Building Self-Compassion — Kristin Neff’s Method",
-            "Link": "https://www.youtube.com/watch?v=IvtZBUSplr4"
-          },
-          {
-            "Day": 18,
-            "Title": "How to Set Boundaries After Trauma",
-            "Link": "https://www.youtube.com/watch?v=fkjtmzW1FdE"
-          },
-          {
-            "Day": 19,
-            "Title": "Breathwork: Reconnecting With Yourself",
-            "Link": "https://www.youtube.com/watch?v=-_pJ0QdPCMo"
-          },
-          {
-            "Day": 20,
-            "Title": "How to Speak Kindly to Yourself — Overcoming PTSD Guilt",
-            "Link": "https://www.youtube.com/watch?v=H7YFZJCLHAA"
-          },
-          {
-            "Day": 21,
-            "Title": "Reflection: The Power of Self-Compassion",
-            "Link": "https://www.youtube.com/watch?v=bim7k0PRCrk"
-          }
-        ]
-      }
-    }
+    "youtube_keywords": [
+      "Guided Meditation for Trauma Healing & PTSD",
+      "5-4-3-2-1 Grounding Exercise",
+      "Body Scan Meditation",
+      "How to Create a Safe Space in Your Mind",
+      "Calming the Nervous System: Breathwork for PTSD",
+      "What Is PTSD? Understanding the Science",
+      "Reflective Journaling: Mindfulness for PTSD",
+      "Understanding PTSD Triggers: A Guided Session",
+      "Grounding Through the 5 Senses",
+      "Art Therapy for PTSD — Creative Release Exercise",
+      "Journaling for Trauma Healing",
+      "Emotional Regulation: Managing PTSD Mood Swings",
+      "Guided Relaxation: Finding Calm After an Anxiety Attack",
+      "Reflect and Reset: Building Emotional Awareness",
+      "Creating a Safe Space in Your Mind and Environment",
+      "Affirmations for PTSD Recovery and Strength",
+      "Building Self-Compassion — Kristin Neff’s Method",
+      "How to Set Boundaries After Trauma",
+      "Breathwork: Reconnecting With Yourself",
+      "How to Speak Kindly to Yourself — Overcoming PTSD Guilt",
+      "Reflection: The Power of Self-Compassion"
+    ]
   },
   "drug_recovery": {
     "tasks": {
