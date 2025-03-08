@@ -8,6 +8,7 @@ import {
   IconLogin,
   IconUserPlus,
   IconListCheck,
+  IconRobot,
 } from "@tabler/icons-react";
 
 const Menuitems = [
@@ -15,11 +16,11 @@ const Menuitems = [
     navlabel: true,
     subheader: "PATIENT DASHBOARD",
   },
-  {
-    title: "Landing Page",
-    icon: IconHome2,
-    href: "/LandingPage",
-  },
+  // {
+  //   title: "Landing Page",
+  //   icon: IconHome2,
+  //   href: "/LandingPage",
+  // },
   {
     title: "Patient Dashboard",
     icon: IconHome2,
@@ -42,7 +43,7 @@ const Menuitems = [
   },
   {
     title: "AI BOT",
-    icon: IconHeartbeat,
+    icon: IconRobot,
     href: "/AIBot",
   },
   {
