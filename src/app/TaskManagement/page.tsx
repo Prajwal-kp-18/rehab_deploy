@@ -20,7 +20,7 @@ const TaskManager = () => {
   const [tasks, setTasks] = useState<
     Record<number, Record<number, DailyTask[]>>
   >({});
-  const [videos, setVideos] = useState({});
+  const [videos, setVideos] = useState<any[]>();
   const [loading, setLoading] = useState(true);
   const [selectedWeek, setSelectedWeek] = useState<number>(1);
   const [selectedDay, setSelectedDay] = useState<number>(1);
@@ -61,6 +61,24 @@ const TaskManager = () => {
     });
 
     setTasks((prev) => ({
+      ...prev,
+      [selectedWeek]: {
+        ...prev[selectedWeek],
+        [selectedDay]: prev[selectedWeek][selectedDay].map((task) =>
+          task.id === taskId ? { ...task, status: "completed" } : task
+        ),
+      },
+    }));
+  };
+
+  const handleTakeActivity2 = async (taskId: string) => {
+    await fetch(`/api/youtube-activities/assign`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ taskId, status: "completed" }),
+    });
+
+    setVideos((prev) => ({
       ...prev,
       [selectedWeek]: {
         ...prev[selectedWeek],
@@ -153,6 +171,64 @@ const TaskManager = () => {
                 >
                   Take Activity
                 </Button>
+              </div>
+            </motion.div>
+          ))
+        ) : (
+          <p className="text-center text-gray-500">No tasks for this day.</p>
+        )}
+        {videos.length > 0 ? (
+          videos.map((task) => (
+            <motion.div
+              key={task.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-8 border rounded-xl shadow-lg bg-blue-100 border-blue-300 min-h-[250px]"
+            >
+              <h2 className="text-2xl font-semibold text-gray-900">
+                {task.activity}
+              </h2>
+              <p className="text-gray-700 mb-4">
+                Disorder: {task.disorder} ({task.severity})
+              </p>
+              <p className="text-gray-700 mb-4">
+                {task.reflection
+                  ? `Reflection: ${task.reflection}`
+                  : "No reflections yet"}
+              </p>
+
+              <span
+                className={`text-xl font-bold ${
+                  task.status === "completed"
+                    ? "text-green-700"
+                    : task.status === "skipped"
+                    ? "text-red-700"
+                    : "text-blue-700"
+                }`}
+              >
+                {task.status === "completed"
+                  ? "Completed"
+                  : task.status === "skipped"
+                  ? "Skipped"
+                  : "Pending"}
+              </span>
+
+              <div className="flex items-center mt-4 justify-start gap-2">
+                <Button
+                  onClick={() => handleVideo(task.id)}
+                  disabled={task.status !== "pending"}
+                  className="bg-green-500 text-white px-4 py-2 rounded-lg transition-transform transform hover:scale-105 disabled:opacity-80"
+                >
+                  Take Activity
+                </Button>
+                <Button
+                  onClick={() => handleTakeActivity2(task.id)}
+                  disabled={task.status !== "pending"}
+                  className="bg-green-500 text-white px-4 py-2 rounded-lg transition-transform transform hover:scale-105 disabled:opacity-80"
+                >
+                  Complete
+                </Button>
+
               </div>
             </motion.div>
           ))
