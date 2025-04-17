@@ -80,8 +80,8 @@ export async function POST(req: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-    const data: any = tasksData[disorder];
-    // Extract tasks from JSON
+    
+    const data = tasksData[disorder as keyof typeof tasksData];    // Extract tasks from JSON
     const weeks = (data as unknown as TasksData).tasks.weeks;
     const tasks: {
       userId: any;
