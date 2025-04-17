@@ -16,5 +16,6 @@ setup(
         "pypdf",
         "langchain_community",
         "sentence-transformers",
+        "wheel",
     ],
 )
