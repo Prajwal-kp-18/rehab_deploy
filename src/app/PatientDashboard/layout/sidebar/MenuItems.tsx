@@ -10,6 +10,7 @@ import {
   IconListCheck,
   IconRobot,
 } from "@tabler/icons-react";
+import { title } from "process";
 
 const Menuitems = [
   {
@@ -31,20 +32,30 @@ const Menuitems = [
     icon: IconUserCircle,
     href: "/PatientDashboard/PatientPage/profile",
   },
+  // {
+  //   title: "Video Recommendations",
+  //   icon: IconVideo,
+  //   href: "/youtube",
+  // },
+  // {
+  //   title: "Disease Prediction",
+  //   icon: IconHeartbeat,
+  //   href: "/PatientDashboard/DiseasePrediction",
+  // },
+  // {
+  //   title: "AI BOT",
+  //   icon: IconRobot,
+  //   href: "/AIBot",
+  // },
   {
-    title: "Video Recommendations",
-    icon: IconVideo,
-    href: "/youtube",
-  },
-  {
-    title: "Disease Prediction",
+    title: "Game Recovery",
     icon: IconHeartbeat,
-    href: "/PatientDashboard/DiseasePrediction",
+    href: "/ptsd/games",
   },
   {
-    title: "AI BOT",
-    icon: IconRobot,
-    href: "/AIBot",
+    title: "Game Dashboard",
+    icon: IconRun,
+    href: "/gameprogress",
   },
   {
     title: "Exercise & Activity",
